@@ -1,0 +1,178 @@
+
+# 
+# ## <font color='blue'>Microsoft Power BI Para Business Intelligence e Data Science</font>
+# 
+# ## <font color='blue'>Machine Learning com Linguagem Python e Power BI Dentro do Jupyter Notebook</font>
+# 
+# Problema de Negócio:
+# 
+# Considerando dados históricos de clientes que realizaram compras em nossa empresa, faça o agrupamento (segmentação) dos clientes por similaridade de características em 3 grupos e envie o relatório para a equipe de Marketing.
+#feito em Jupyter Notebook
+
+# ![DSA](imagens/Lab7.png)
+
+# In[1]:
+
+
+# Versão da Linguagem Python
+from platform import python_version
+print('Versão da Linguagem Python Usada Neste Jupyter Notebook:', python_version())
+
+
+# In[17]:
+
+
+# Imports
+import pandas as pd
+from sklearn.cluster import KMeans #cluster é um pacote e kmeans uma função, para machine learning
+from sklearn.preprocessing import StandardScaler # função Standatscaler para proprocesar os dados
+
+
+# ## Carregando os Dados
+
+# In[3]:
+
+
+# Carrega os dados
+df_dsa = pd.read_csv('dados/dados_clientes.csv')
+
+
+# In[4]:
+
+
+type(df_dsa) #data frame é uma tabela
+
+
+# In[5]:
+
+
+# Visualiza as 10 primeiras linhas, primeira coluna é um indice automatico
+df_dsa.head(10)
+
+
+# ## Análise Exploratória
+
+# In[6]:
+
+
+# Resumo estatístico -  metodo que gera um resumo estatístico
+df_dsa[['idade', 'renda_anual', 'pontuacao_gastos']].describe()
+
+
+# ## Pré-Processamento dos Dados
+
+# In[7]:
+
+
+# Cria o padronizador dos dados #depende das supesições, que necesse casos é necessario que os dados estejam na mesma escala, pois ele vai aplicar distância matemática
+padronizador = StandardScaler()
+
+
+# In[8]:
+
+
+# Aplica o padronizador somente nas colunas de interesse #faz automaticamente 
+dados_padronizados = padronizador.fit_transform(df_dsa[['idade', 'renda_anual', 'pontuacao_gastos']])
+
+
+# In[9]:
+
+
+# Visualiza os dados
+print(dados_padronizados)
+
+
+# ## Construção do Modelo de Machine Learning Para Segmentação de Clientes
+
+# In[10]:
+
+
+# Definimos o número de clusters (k)
+k = 3
+
+
+# In[11]:
+
+
+# Criamos o modelo K-means
+kmeans = KMeans(n_clusters = k)
+
+
+# In[15]:
+
+
+set OMP_NUM_THREADS=2
+   python seu_script.py
+
+
+# In[12]:
+
+
+# Treinamento do modelo com os dados padronizados
+kmeans.fit(dados_padronizados)
+
+
+# In[18]:
+
+
+# Atribuímos os rótulos dos clusters aos clientes #kmenenas calcula a distancia matematica
+df_dsa['cluster'] = kmeans.labels_
+
+
+# In[ ]:
+
+
+# Exibe o resultado (10 primeiras linhas)
+df_dsa.head(10)
+
+
+# In[ ]:
+
+
+# Salvamos o resultado em disco
+df_dsa.to_csv('dados/segmentos.csv', index = False)
+
+
+# ## Gerando Relatório dos Segmentos de Clientes com Power BI no Jupyter Notebook
+
+# https://pypi.org/project/powerbiclient/
+
+# In[ ]:
+
+
+# Instala o pacote #o jupyter notebook -q instalação silenciosa !pip pede para ele executar no comando de intalação de fora di anacinda  
+get_ipython().system('pip install -q powerbiclient')
+
+
+# In[ ]:
+
+
+# Carrega as funções usadas para autenticar e gerar  relatórios
+from powerbiclient import QuickVisualize, get_dataset_config, Report
+from powerbiclient.authentication import DeviceCodeLoginAuthentication
+
+
+# **ATENÇÃO**: Para fazer a autenticação é necessário ter uma conta no Power BI Service, criada com e-mail de estudante ou corporativo. Caso você não tenha, apenas acompanhe as aulas e ao final mostraremos como abrir o relatório no Power BI  Desktop, que será fornecido ao final do capítulo.
+
+# In[ ]:
+
+
+# Define a autenticação no Power BI Service
+device_auth = DeviceCodeLoginAuthentication()
+
+
+# In[ ]:
+
+
+# Cria o relatório no Power BI
+relatorio_PBI = QuickVisualize(get_dataset_config(df_dsa), auth = device_auth)
+
+
+# In[ ]:
+
+
+# Renderiza (visualiza) o relatório
+relatorio_PBI
+
+
+# # Fim
